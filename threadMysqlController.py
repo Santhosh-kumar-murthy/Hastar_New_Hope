@@ -5,13 +5,7 @@ import pymysql
 # import requests
 from pymysql.cursors import DictCursor
 
-# Database Configuration
-db_config = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'root',
-    'database': 'hastar_reloaded'
-}
+from config import db_config
 
 
 class ThreadMysqlController:

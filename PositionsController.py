@@ -5,13 +5,7 @@ import pymysql
 # import requests
 from pymysql.cursors import DictCursor
 
-# Database Configuration
-db_config = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'root',
-    'database': 'hastar_reloaded'
-}
+from config import db_config
 
 
 class PositionsController:
@@ -163,7 +157,7 @@ class PositionsController:
         #     "lot_size": position['flat_lot_size']
         # })
         # print(x.json())
-        print("EXIT", position['zerodha_trading_symbol'], exit_price, datetime.datetime.now(),exit_reason)
+        print("EXIT", position['zerodha_trading_symbol'], exit_price, datetime.datetime.now(), exit_reason)
 
     def check_for_existing_index_position(self, instrument):
         with closing(self.conn.cursor()) as cursor:
