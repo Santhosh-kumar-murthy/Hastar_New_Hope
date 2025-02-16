@@ -5,14 +5,8 @@ import pandas as pd
 import pyotp
 
 from broker_libs.kite_trade import get_enctoken, KiteApp
+from config import kite_config
 from technical_analysis import TechnicalAnalysis
-
-# Zerodha Kite Credentials
-kite_config = {
-    "user_id": "ADR902",
-    "password": "Nimmi@95",
-    "totp": "KUVEGFL2XTGNWV4XFWX5KRVYPYWJWWYB"
-}
 
 
 class BrokerController:
@@ -32,13 +26,13 @@ class BrokerController:
         kite = KiteApp(enctoken=enc_token)
         return kite
 
-    def kite_historic_data(self, kite, instrument_token, interval):
+    def kite_historic_data(self, kite, instrument_token, interval, a, c):
         from_datetime = datetime.datetime.now() - datetime.timedelta(days=4)
         to_datetime = datetime.datetime.now()
         interval = interval
         candle_data = pd.DataFrame(kite.historical_data(instrument_token, from_datetime, to_datetime, interval,
                                                         continuous=False, oi=False))
-        applied_df = self.technical_analysis_controller.calculate_signals(candle_data)
+        applied_df = self.technical_analysis_controller.calculate_signals(candle_data, a=a, c=c)
         time.sleep(0.5)
         return applied_df
 

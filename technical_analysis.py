@@ -13,7 +13,7 @@ class TechnicalAnalysis:
         atr = true_range.rolling(window=period).mean()
         return atr
 
-    def calculate_signals(self, df, a=1, c=1):
+    def calculate_signals(self, df, a=2, c=1):
         df['EMA_1'] = ta.ema(close=df['close'], length=1)
         df['atr'] = self.calculate_atr(df, period=c)
         df['nLoss'] = a * df['atr']
