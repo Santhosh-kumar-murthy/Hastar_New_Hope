@@ -6,7 +6,8 @@ db_config = {
 }
 
 kite_config = {
-    "user_id": "BUA093",
-    "password": "#Bha7899109581",
-    "totp": "2IFGLC42XEDNFWAUELEROIHIA7AUU5IZ"
+    "user_id": "ZUV647",
+    "password": "Sangi@14",
+    "totp": "MALIEBSCJVVFJ6EOOIUBP64OJFRTYDPA"
 }
+

@@ -30,7 +30,7 @@ def fetch_historical_data(instrument_token):
         return {
             '1min': broker_controller.kite_historic_data(kite, instrument_token, 'minute', a=2, c=1),
             '5min': broker_controller.kite_historic_data(kite, instrument_token, '3minute', a=2, c=1),
-            '15min': broker_controller.kite_historic_data(kite, instrument_token, '5minute', a=2, c=1)
+            # '15min': broker_controller.kite_historic_data(kite, instrument_token, '5minute', a=2, c=1)
         }
     except Exception as e:
         print(f"Error fetching historical data for token {instrument_token}: {e}")
@@ -138,8 +138,10 @@ def startAlgo():
                     ce_data = fetch_historical_data(index['ce_option']['zerodha_option']['zerodha_instrument_token'])
                     pe_data = fetch_historical_data(index['pe_option']['zerodha_option']['zerodha_instrument_token'])
                     # Entry conditions for Call Option
-                    if (ce_data and ce_data['1min'].iloc[-2].buy_signal and ce_data['5min'].iloc[-1].buy_signal and
-                            ce_data['15min'].iloc[-1].buy_signal):
+                    if (ce_data and ce_data['1min'].iloc[-2].buy_signal and ce_data['5min'].iloc[-1].buy_signal
+                            # and
+                            # ce_data['15min'].iloc[-1].buy_signal
+                    ):
                         positions_controller.enter_new_position(
                             index['name'], index['ce_option'], ce_data['1min'].iloc[-1].close, 1
                         )
@@ -148,8 +150,10 @@ def startAlgo():
                         continue
 
                     # Entry conditions for Put Option
-                    if (pe_data and pe_data['1min'].iloc[-2].buy_signal and pe_data['5min'].iloc[-1].buy_signal and
-                            pe_data['15min'].iloc[-1].buy_signal):
+                    if (pe_data and pe_data['1min'].iloc[-2].buy_signal and pe_data['5min'].iloc[-1].buy_signal
+                            # and
+                            # pe_data['15min'].iloc[-1].buy_signal
+                    ):
                         positions_controller.enter_new_position(
                             index['name'], index['pe_option'], pe_data['1min'].iloc[-1].close, 2
                         )
