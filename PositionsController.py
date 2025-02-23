@@ -2,7 +2,7 @@ import datetime
 from contextlib import closing
 
 import pymysql
-# import requests
+import requests
 from pymysql.cursors import DictCursor
 
 from config import db_config
@@ -110,53 +110,39 @@ class PositionsController:
                             option_data['flat_trade_option']['Optiontype'],
                             ))
         self.conn.commit()
-        # x = requests.post("http://127.0.0.1:7000/api/place_order", json={
-        #     "buy_or_sell": "B",
-        #     "product_type": "M",
-        #     "tradingsymbol": option_data['flat_trade_option']['Tradingsymbol'],
-        #     "lot_size": option_data['flat_trade_option']['Lotsize']
-        # })
-        # print(x.json())
+        requests.post("http://127.0.0.1:7000/api/place_order", json={
+            "buy_or_sell": "B",
+            "product_type": "M",
+            "tradingsymbol": option_data['flat_trade_option']['Tradingsymbol'],
+            "lot_size": option_data['flat_trade_option']['Lotsize']
+        })
         print("ENTRY", option_data['zerodha_option']['zerodha_trading_symbol'], buy_price, datetime.datetime.now())
-
-    # def exit_position_sl(self, position, exit_price, exit_reason):
-    #     profit = (float(exit_price) - float(position['position_entry_price'])) * position['lot_size']
-    #     with self.conn.cursor() as cursor:
-    #         cursor.execute(
-    #             'UPDATE positions SET position_exit_price = %s,position_exit_time = NOW(), exit_reason = %s, '
-    #             'profit = %s WHERE position_id = %s',
-    #             (exit_price, exit_reason, profit, position['position_id']))
-    #     self.conn.commit()
-    #     # x = requests.post("http://127.0.0.1:7000/api/place_order", json={
-    #     #     "buy_or_sell": "S",
-    #     #     "product_type": "M",
-    #     #     "tradingsymbol": position['flat_trading_symbol'],
-    #     #     "lot_size": position['flat_lot_size']
-    #     # })
-    #     # print(x.json())
-    #     print("ENTRY", position['zerodha_trading_symbol'], exit_price, datetime.datetime.now())
 
     def exit_position_strategic(self, position, exit_price, exit_reason):
         profit = (float(exit_price) - float(position['position_entry_price'])) * position['lot_size']
         if position['position_sl_exit_price'] is None:
             sl_profit = profit
             position_sl_exit_price = exit_price
+            position_sl_exit_time = datetime.datetime.now()
+
         else:
             sl_profit = position['sl_profit']
             position_sl_exit_price = position['position_sl_exit_price']
+            position_sl_exit_time = position['position_sl_exit_time']
         with self.conn.cursor() as cursor:
             cursor.execute(
-                'UPDATE positions SET position_exit_price = %s,position_exit_time = NOW(), position_sl_exit_price = %s,position_sl_exit_time = NOW(), exit_reason = %s, '
+                'UPDATE positions SET position_exit_price = %s,position_exit_time = NOW(), position_sl_exit_price = %s,'
+                'position_sl_exit_time = %s, exit_reason = %s, '
                 'profit = %s, sl_profit = %s WHERE position_id = %s',
-                (exit_price, position_sl_exit_price, exit_reason, profit, sl_profit, position['position_id']))
+                (exit_price, position_sl_exit_price, position_sl_exit_time, exit_reason, profit, sl_profit,
+                 position['position_id']))
         self.conn.commit()
-        # x = requests.post("http://127.0.0.1:7000/api/place_order", json={
-        #     "buy_or_sell": "S",
-        #     "product_type": "M",
-        #     "tradingsymbol": position['flat_trading_symbol'],
-        #     "lot_size": position['flat_lot_size']
-        # })
-        # print(x.json())
+        requests.post("http://127.0.0.1:7000/api/place_order", json={
+            "buy_or_sell": "S",
+            "product_type": "M",
+            "tradingsymbol": position['flat_trading_symbol'],
+            "lot_size": position['flat_lot_size']
+        })
         print("EXIT", position['zerodha_trading_symbol'], exit_price, datetime.datetime.now(), exit_reason)
 
     def check_for_existing_index_position(self, instrument):

@@ -29,8 +29,8 @@ def fetch_historical_data(instrument_token):
     try:
         return {
             '1min': broker_controller.kite_historic_data(kite, instrument_token, 'minute', a=2, c=1),
-            '5min': broker_controller.kite_historic_data(kite, instrument_token, '3minute', a=1, c=1),
-            '15min': broker_controller.kite_historic_data(kite, instrument_token, '5minute', a=1, c=1)
+            '5min': broker_controller.kite_historic_data(kite, instrument_token, '3minute', a=2, c=1),
+            '15min': broker_controller.kite_historic_data(kite, instrument_token, '5minute', a=2, c=1)
         }
     except Exception as e:
         print(f"Error fetching historical data for token {instrument_token}: {e}")
@@ -81,9 +81,7 @@ def remove_position_from_ws(instrument_token):
 trailing_stoploss = {}
 
 # Fixed stop-loss settings
-INITIAL_STOPLOSS_POINTS = 30
-# TRAILING_TRIGGER_POINTS = 10
-# TRAILING_ADJUST_POINTS = 10
+MASTER_STOPLOSS_POINTS = 30
 TRADING_END_TIME = time(15, 15)
 
 
@@ -100,13 +98,13 @@ def process_tick_data(instrument_token, ltp):
 
         # Set initial stop-loss in points if not already set
         if instrument_token not in trailing_stoploss:
-            trailing_stoploss[instrument_token] = entry_price - INITIAL_STOPLOSS_POINTS  # SL is 20 points below entry
-            print("Initial stop loss set to ", entry_price - INITIAL_STOPLOSS_POINTS)
+            trailing_stoploss[instrument_token] = entry_price - MASTER_STOPLOSS_POINTS  # SL is 20 points below entry
+            print("Initial stop loss set to ", entry_price - MASTER_STOPLOSS_POINTS)
 
         # Check Stop-Loss Hit Condition
         if ltp <= trailing_stoploss[instrument_token]:  # If price drops to SL, exit
 
-            threadMysqlController.exit_position(position, ltp, exit_reason="Trailing Stop-Loss Hit")
+            threadMysqlController.exit_position(position, ltp, exit_reason="Master Stop-Loss Hit")
             print(f"Stop-Loss hit for {instrument_token} at {ltp}. Exiting position.")
             remove_position_from_ws(instrument_token)  # Unsubscribe from WebSocket tracking
             del trailing_stoploss[instrument_token]  # Remove from tracking
