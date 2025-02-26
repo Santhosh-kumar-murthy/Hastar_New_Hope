@@ -124,11 +124,12 @@ class PositionsController:
             sl_profit = profit
             position_sl_exit_price = exit_price
             position_sl_exit_time = datetime.datetime.now()
-
+            exit_reason = exit_reason
         else:
             sl_profit = position['sl_profit']
             position_sl_exit_price = position['position_sl_exit_price']
             position_sl_exit_time = position['position_sl_exit_time']
+            exit_reason = position['exit_reason']
         with self.conn.cursor() as cursor:
             cursor.execute(
                 'UPDATE positions SET position_exit_price = %s,position_exit_time = NOW(), position_sl_exit_price = %s,'

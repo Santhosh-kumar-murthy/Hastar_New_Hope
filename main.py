@@ -123,6 +123,9 @@ def startAlgo():
                         for position in active_position:
                             exit_price = broker_controller.get_ltp_kite(kite, position['zerodha_instrument_token'])
                             positions_controller.exit_position_strategic(position, exit_price, exit_reason="End of Day")
+                            remove_position_from_ws(position['zerodha_instrument_token'])
+                            if position['zerodha_instrument_token'] in trailing_stoploss:
+                                del trailing_stoploss[position['zerodha_instrument_token']]
                 break
             for index in observable_indices:
                 active_positions = positions_controller.check_for_existing_index_position(index['name'])
@@ -168,6 +171,9 @@ def startAlgo():
                         if position_one_min_df.iloc[-2].sell_signal:
                             positions_controller.exit_position_strategic(position, position_one_min_df.iloc[-1].close,
                                                                          "Strategy Exit")
+                            remove_position_from_ws(position['zerodha_instrument_token'])
+                            if position['zerodha_instrument_token'] in trailing_stoploss:
+                                del trailing_stoploss[position['zerodha_instrument_token']]
         except Exception as e:
             print(f"MAIN_FUNCTION ERROR: {e}")
 
