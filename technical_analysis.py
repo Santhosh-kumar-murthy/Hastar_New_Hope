@@ -1,6 +1,7 @@
-import pandas_ta as ta
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pandas_ta as ta
+from sklearn.linear_model import LinearRegression
 
 
 class TechnicalAnalysis:
@@ -63,3 +64,57 @@ class TechnicalAnalysis:
         else:
             return False, existing_ce_df.iloc[-1].close, existing_ce_df.iloc[-1].close - float(
                 existing_ce_df.iloc[-2].xATRTrailingStop)
+
+    def linreg(self, series, length):
+        """
+        Computes a rolling linear regression similar to TradingView's linreg().
+
+        Parameters:
+        - series (pd.Series): The price series (Open, High, Low, or Close).
+        - length (int): The regression length.
+
+        Returns:
+        - np.array: The rolling regression values.
+        """
+        lr_values = np.full(len(series), np.nan)
+
+        for i in range(len(series) - length + 1):
+            x = np.arange(length).reshape(-1, 1)  # Time index as feature
+            y = series.iloc[i:i + length].values.reshape(-1, 1)  # Price values
+
+            model = LinearRegression().fit(x, y)
+            lr_values[i + length - 1] = model.predict([[length - 1]])[0][0]  # Predict the last value in the window
+
+        return lr_values
+
+    def linreg_candles(self, df, linreg_length=11, signal_length=7, use_sma=True):
+        """
+        Converts OHLC DataFrame to Linear Regression Candles.
+
+        Parameters:
+        - df (pd.DataFrame): DataFrame containing 'Open', 'High', 'Low', 'Close' columns.
+        - linreg_length (int): The window size for Linear Regression.
+        - signal_length (int): The window size for SMA/EMA smoothing.
+        - use_sma (bool): If True, uses SMA; otherwise, uses EMA.
+
+        Returns:
+        - Updated DataFrame with Linear Regression Candlesticks and Signal Line.
+        """
+        df = df.copy()
+
+        # Compute Linear Regression for each OHLC column
+        df['LR_Open'] = self.linreg(df['open'], linreg_length)
+        df['LR_High'] = self.linreg(df['high'], linreg_length)
+        df['LR_Low'] = self.linreg(df['low'], linreg_length)
+        df['LR_Close'] = self.linreg(df['close'], linreg_length)
+
+        # Compute Signal Smoothing (SMA or EMA)
+        if use_sma:
+            df['LR_Signal'] = df['LR_Close'].rolling(window=signal_length).mean()
+        else:
+            df['LR_Signal'] = df['LR_Close'].ewm(span=signal_length, adjust=False).mean()
+
+        # Identify Bullish and Bearish Candles
+        df['Bullish'] = df['LR_Open'] < df['LR_Close']
+
+        return df

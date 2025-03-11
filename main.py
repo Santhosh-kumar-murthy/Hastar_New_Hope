@@ -24,12 +24,12 @@ kws = KiteTicker(api_key="AlgoTrader", access_token=kite.enctoken + "&user_id=" 
 subscribed_tokens = set()
 
 
-def fetch_historical_data(instrument_token):
+def fetch_historical_data(instrument_token, symbol):
     """Fetch historical data for different timeframes (1min, 5min, 15min)."""
     try:
         return {
-            '1min': broker_controller.kite_historic_data(kite, instrument_token, 'minute', a=2, c=1),
-            '5min': broker_controller.kite_historic_data(kite, instrument_token, '3minute', a=2, c=1),
+            '1min': broker_controller.kite_historic_data(kite, instrument_token, 'minute', a=2, c=1, symbol=symbol),
+            '5min': broker_controller.kite_historic_data(kite, instrument_token, '3minute', a=2, c=1, symbol=symbol),
             # '15min': broker_controller.kite_historic_data(kite, instrument_token, '5minute', a=2, c=1)
         }
     except Exception as e:
@@ -138,12 +138,15 @@ def startAlgo():
                     index['pe_option'] = positions_controller.get_option_for_buying(index['name'], 2, ltp)
 
                     # Fetch historical data for both CE & PE
-                    ce_data = fetch_historical_data(index['ce_option']['zerodha_option']['zerodha_instrument_token'])
-                    pe_data = fetch_historical_data(index['pe_option']['zerodha_option']['zerodha_instrument_token'])
+                    ce_data = fetch_historical_data(index['ce_option']['zerodha_option']['zerodha_instrument_token'],
+                                                    index['ce_option']['zerodha_option']['zerodha_trading_symbol'])
+                    pe_data = fetch_historical_data(index['pe_option']['zerodha_option']['zerodha_instrument_token'],
+                                                    index['pe_option']['zerodha_option']['zerodha_trading_symbol'])
                     # Entry conditions for Call Option
                     if (ce_data and ce_data['1min'].iloc[-2].buy_signal and ce_data['5min'].iloc[-1].buy_signal
-                            # and
-                            # ce_data['15min'].iloc[-1].buy_signal
+                            and
+                            ce_data['1min'].iloc[-1].LR_Signal < ce_data['1min'].iloc[-2].LR_Low
+                            and ce_data['1min'].iloc[-2].Bullish
                     ):
                         positions_controller.enter_new_position(
                             index['name'], index['ce_option'], ce_data['1min'].iloc[-1].close, 1
@@ -154,8 +157,9 @@ def startAlgo():
 
                     # Entry conditions for Put Option
                     if (pe_data and pe_data['1min'].iloc[-2].buy_signal and pe_data['5min'].iloc[-1].buy_signal
-                            # and
-                            # pe_data['15min'].iloc[-1].buy_signal
+                            and
+                            pe_data['1min'].iloc[-1].LR_Signal < pe_data['1min'].iloc[-2].LR_Low
+                            and pe_data['1min'].iloc[-2].Bullish
                     ):
                         positions_controller.enter_new_position(
                             index['name'], index['pe_option'], pe_data['1min'].iloc[-1].close, 2
@@ -167,10 +171,13 @@ def startAlgo():
                     for position in active_positions:
                         position_one_min_df = broker_controller.kite_historic_data(kite,
                                                                                    position['zerodha_instrument_token'],
-                                                                                   'minute', a=2, c=1)
-                        if position_one_min_df.iloc[-2].sell_signal:
+                                                                                   'minute', a=2, c=1,
+                                                                                   symbol=position[
+                                                                                       'zerodha_trading_symbol'])
+                        if not position_one_min_df.iloc[-2].Bullish:
+                            print("NOT TRUE", datetime.now())
                             positions_controller.exit_position_strategic(position, position_one_min_df.iloc[-1].close,
-                                                                         "Strategy Exit")
+                                                                         "LR BEARISH Exit")
                             remove_position_from_ws(position['zerodha_instrument_token'])
                             if position['zerodha_instrument_token'] in trailing_stoploss:
                                 del trailing_stoploss[position['zerodha_instrument_token']]

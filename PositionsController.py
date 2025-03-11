@@ -110,13 +110,13 @@ class PositionsController:
                             option_data['flat_trade_option']['Optiontype'],
                             ))
         self.conn.commit()
-        requests.post("http://127.0.0.1:7000/api/place_order", json={
-            "buy_or_sell": "B",
-            "product_type": "M",
-            "tradingsymbol": option_data['flat_trade_option']['Tradingsymbol'],
-            "lot_size": option_data['flat_trade_option']['Lotsize']
-        })
-        print("ENTRY", option_data['zerodha_option']['zerodha_trading_symbol'], buy_price, datetime.datetime.now())
+        # requests.post("http://127.0.0.1:7000/api/place_order", json={
+        #     "buy_or_sell": "B",
+        #     "product_type": "M",
+        #     "tradingsymbol": option_data['flat_trade_option']['Tradingsymbol'],
+        #     "lot_size": option_data['flat_trade_option']['Lotsize']
+        # })
+        # print("ENTRY", option_data['zerodha_option']['zerodha_trading_symbol'], buy_price, datetime.datetime.now())
 
     def exit_position_strategic(self, position, exit_price, exit_reason):
         profit = (float(exit_price) - float(position['position_entry_price'])) * position['lot_size']
@@ -138,13 +138,13 @@ class PositionsController:
                 (exit_price, position_sl_exit_price, position_sl_exit_time, exit_reason, profit, sl_profit,
                  position['position_id']))
         self.conn.commit()
-        requests.post("http://127.0.0.1:7000/api/place_order", json={
-            "buy_or_sell": "S",
-            "product_type": "M",
-            "tradingsymbol": position['flat_trading_symbol'],
-            "lot_size": position['flat_lot_size']
-        })
-        print("EXIT", position['zerodha_trading_symbol'], exit_price, datetime.datetime.now(), exit_reason)
+        # requests.post("http://127.0.0.1:7000/api/place_order", json={
+        #     "buy_or_sell": "S",
+        #     "product_type": "M",
+        #     "tradingsymbol": position['flat_trading_symbol'],
+        #     "lot_size": position['flat_lot_size']
+        # })
+        # print("EXIT", position['zerodha_trading_symbol'], exit_price, datetime.datetime.now(), exit_reason)
 
     def check_for_existing_index_position(self, instrument):
         with closing(self.conn.cursor()) as cursor:

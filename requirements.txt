@@ -7,3 +7,4 @@ pyotp~=2.9.0
 PyMySQL~=1.1.1
 Brotli~=1.1.0
 kiteconnect~=5.0.1
+scikit-learn

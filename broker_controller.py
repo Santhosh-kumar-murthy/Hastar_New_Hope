@@ -26,14 +26,17 @@ class BrokerController:
         kite = KiteApp(enctoken=enc_token)
         return kite
 
-    def kite_historic_data(self, kite, instrument_token, interval, a, c):
+    def kite_historic_data(self, kite, instrument_token, interval, a, c, symbol):
         from_datetime = datetime.datetime.now() - datetime.timedelta(days=4)
         to_datetime = datetime.datetime.now()
         interval = interval
         candle_data = pd.DataFrame(kite.historical_data(instrument_token, from_datetime, to_datetime, interval,
                                                         continuous=False, oi=False))
         applied_df = self.technical_analysis_controller.calculate_signals(candle_data, a=a, c=c)
-        time.sleep(0.5)
+        applied_df = self.technical_analysis_controller.linreg_candles(applied_df, linreg_length=11, signal_length=11,
+                                                                       use_sma=True)
+        if not applied_df.iloc[-2].Bullish:
+            print(symbol, "NOT TRUE", datetime.datetime.now())
         return applied_df
 
     @staticmethod
