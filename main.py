@@ -145,7 +145,7 @@ def startAlgo():
                     # Entry conditions for Call Option
                     if (ce_data and ce_data['1min'].iloc[-2].buy_signal and ce_data['5min'].iloc[-1].buy_signal
                             and
-                            ce_data['1min'].iloc[-1].LR_Signal < ce_data['1min'].iloc[-2].LR_Low
+                            ce_data['1min'].iloc[-2].LR_Signal < ce_data['1min'].iloc[-2].LR_Low
                             and ce_data['1min'].iloc[-2].Bullish
                     ):
                         positions_controller.enter_new_position(
@@ -158,7 +158,7 @@ def startAlgo():
                     # Entry conditions for Put Option
                     if (pe_data and pe_data['1min'].iloc[-2].buy_signal and pe_data['5min'].iloc[-1].buy_signal
                             and
-                            pe_data['1min'].iloc[-1].LR_Signal < pe_data['1min'].iloc[-2].LR_Low
+                            pe_data['1min'].iloc[-2].LR_Signal < pe_data['1min'].iloc[-2].LR_Low
                             and pe_data['1min'].iloc[-2].Bullish
                     ):
                         positions_controller.enter_new_position(
